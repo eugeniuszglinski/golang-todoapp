@@ -16,7 +16,7 @@ env-down:
 env-cleanup:
 	@read -p "Do you want to cleanup all volume files in an environment? There is a risk of losing data. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-	  docker compose down todoapp-postgres && \
+	  docker compose down todoapp-postgres port-forwarder && \
 	  rm -rf out/pgdata && \
 	  echo "Environment cleanup successfully completed"; \
 	else \
@@ -29,7 +29,7 @@ env-port-forward:
 env-port-close:
 	@docker compose down port-forwarder
 
-# for log running services use "compose up", otherwise use "compose run"
+# for long running services use "compose up", otherwise use "compose run"
 # $(seq) takes argument given to MAKEFILE target
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
@@ -57,3 +57,9 @@ migrate-action:
 		-path /migrations \
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@todoapp-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		"$(action)"
+
+todoapp-run:
+	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run cmd/todoapp/main.go
