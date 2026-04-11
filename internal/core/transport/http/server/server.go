@@ -36,7 +36,7 @@ func (s *HttpServer) RegisterApiRouters(routers ...*ApiVersionRouter) {
 		// before passing it to the ApiVersionRouter. This way, the ApiVersionRouter can define its routes without
 		// needing to include the API version in their paths. This is idiomatic because *feature* routers should not be
 		// aware of the API versioning scheme, allowing them to focus solely on their specific routes and handlers.
-		s.mux.Handle(prefix+"/", http.StripPrefix(prefix, *router))
+		s.mux.Handle(prefix+"/", http.StripPrefix(prefix, router.WithMiddleware()))
 	}
 }
 
