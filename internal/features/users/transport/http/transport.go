@@ -11,7 +11,7 @@ import (
 type UsersService interface {
 	CreateUser(ctx context.Context, user *domain.User) (*domain.User, error)
 
-	GetUsers(ctx context.Context, limit *int, offset *int) ([]*domain.User, error)
+	GetUsers(ctx context.Context, limit, offset *int) ([]*domain.User, error)
 
 	GetUser(ctx context.Context, userID int) (*domain.User, error)
 
