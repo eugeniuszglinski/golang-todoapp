@@ -22,6 +22,9 @@ import (
 	users_postgres "github.com/eugeniuszglinski/golang-todoapp/internal/features/users/repository/postgres"
 	users_service "github.com/eugeniuszglinski/golang-todoapp/internal/features/users/service"
 	users_transport_http "github.com/eugeniuszglinski/golang-todoapp/internal/features/users/transport/http"
+	web_file_system "github.com/eugeniuszglinski/golang-todoapp/internal/features/web/repository/file_system"
+	web_service "github.com/eugeniuszglinski/golang-todoapp/internal/features/web/service"
+	web_transport_http "github.com/eugeniuszglinski/golang-todoapp/internal/features/web/transport/http"
 	"go.uber.org/zap"
 
 	_ "github.com/eugeniuszglinski/golang-todoapp/docs"
@@ -73,24 +76,32 @@ func main() {
 	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
 	statisticsTransportHttp := statistics_transport_http.NewStatisticsHttpHandler(statisticsService)
 
+	logger.Debug("Initializing feature", zap.String("feature", "web"))
+
+	webRepository := web_file_system.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webTransportHttp := web_transport_http.NewWebHttpHandler(webService)
+
 	logger.Debug("Initializing HTTP server")
 
+	httpConfig := core_http_server.NewConfigMust()
 	httpServer := core_http_server.NewHttpServer(
-		core_http_server.NewConfigMust(),
+		httpConfig,
 		logger,
-		core_http_middleware.CORS(),
+		core_http_middleware.CORS(httpConfig.AllowedOrigins),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
 		core_http_middleware.PanicRecovery(),
 	)
 
-	apiVersionRouter := core_http_server.NewApiVersionRouter(core_http_server.ApiVersion1)
-	apiVersionRouter.RegisterRoutes(usersTransportHttp.Routes()...)
-	apiVersionRouter.RegisterRoutes(tasksTransportHttp.Routes()...)
-	apiVersionRouter.RegisterRoutes(statisticsTransportHttp.Routes()...)
+	apiVersionRouterV1 := core_http_server.NewApiVersionRouter(core_http_server.ApiVersion1)
+	apiVersionRouterV1.RegisterRoutes(usersTransportHttp.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(tasksTransportHttp.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(statisticsTransportHttp.Routes()...)
 
-	httpServer.RegisterApiRouters(apiVersionRouter)
+	httpServer.RegisterApiRouters(apiVersionRouterV1)
+	httpServer.RegisterRoutes(webTransportHttp.Routes()...)
 	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
