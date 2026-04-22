@@ -11,13 +11,24 @@ import (
 
 // CreateUserRequest is a dto object for user creation
 type CreateUserRequest struct {
-	FullName    string  `json:"full_name" validate:"required,min=3,max=100"`
-	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
+	FullName    string  `json:"full_name"    validate:"required,min=3,max=100"               example:"John Doe"`
+	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+" example:"+48123456789"`
 }
 
 // CreateUserResponse is a dto object for user creation response
 type CreateUserResponse UserDtoResponse
 
+// CreateUser   godoc
+// @Summary     Create a new user
+// @Description Create a new user with the provided details
+// @Tags        users
+// @Accept      application/json
+// @Produce     application/json
+// @Param       request body CreateUserRequest true "CreateUser request body"
+// @Success     201 {object} CreateUserResponse "Created user"
+// @Failure     400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure     500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router      /users [post]
 func (h *UsersHttpHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)
