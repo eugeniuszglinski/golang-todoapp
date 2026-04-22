@@ -12,9 +12,9 @@ import (
 )
 
 type PatchTaskRequest struct {
-	Title       core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed   core_http_types.Nullable[bool]   `json:"completed"`
+	Title       core_http_types.Nullable[string] `json:"title"        swaggertype:"string" example:"Cleaning"`
+	Description core_http_types.Nullable[string] `json:"description"  swaggertype:"string" example:"null"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed"    swaggertype:"boolean"`
 }
 
 func (r *PatchTaskRequest) Validate() error {
@@ -49,6 +49,25 @@ func (r *PatchTaskRequest) Validate() error {
 
 type PatchTaskResponse TaskDtoResponse
 
+// PatchTask    godoc
+// @Summary     Patch task
+// @Description Change existing task
+// @Description ### Logic for patching task (Three-state logic)
+// @Description 1. **field not provided**: `description` will be ignored and unchanged in database
+// @Description 2. **explicitly provided value**: `"description": "Do cleaning"` will update 'description' in database
+// @Description 3. **null value**: `"description": null` will remove 'description' from database (set to NULL)
+// @Description Constants: `title` and `completed` cannot be null
+// @Tags        tasks
+// @Accept      application/json
+// @Produce     application/json
+// @Param       id path int true "ID of task to patch"
+// @Param       request body PatchTaskRequest true "PatchTask request body"
+// @Success     200 {object} PatchTaskResponse "Changed task details"
+// @Failure     400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure     404 {object} core_http_response.ErrorResponse "Task not found"
+// @Failure     409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure     500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router      /tasks/{id} [patch]
 func (h *TasksHttpHandler) PatchTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)

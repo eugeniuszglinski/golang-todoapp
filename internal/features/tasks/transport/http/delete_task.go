@@ -8,6 +8,16 @@ import (
 	core_http_response "github.com/eugeniuszglinski/golang-todoapp/internal/core/transport/http/response"
 )
 
+// DeleteTask   godoc
+// @Summary     Delete task
+// @Description Deletion of an existing task using the task ID
+// @Tags        tasks
+// @Param       id path int true "Task ID"
+// @Success     204 "Successfully deleted task"
+// @Failure     400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure     404 {object} core_http_response.ErrorResponse "Task not found"
+// @Failure     500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router      /tasks/{id} [delete]
 func (h *TasksHttpHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)
